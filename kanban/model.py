@@ -1,41 +1,48 @@
-import simplejson
-import os
+from datetime import date
+import sqlite3
 
-KB_DELETED = 0
-KB_TODO = 1
-KB_DOING = 2
-KB_DONE = 3
-KB_PARKED = 4
-KB_INIT = -1
 
 class Board:
-    def __init__(self, file=r'kbboard.json'):
-        self.file = file
-        if(os.path.isfile(f)):
-            with open(file, mode='r') as f:
-                self.kb = simplejson.loads(f.read())
-        else:
-            with open(file, mode='w+') as f:
-                f.write('')
-                self.kb = {KB_DELETED: {0: {}},
-                           KB_TODO: {0: {}},
-                           KB_DOING: {0: {}},
-                           KB_DONE: {0: {}},
-                           KB_PARKED: {0: {}}}
+    def __init__(self, file):
+        self.db = file
+        conn = sqlite3.connect(self.db)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''create table if not exists kb_board(
+                     id integer primary key autoincrement,
+                     state integer,
+                     title text,
+                     notes text,
+                     created text);''')
+        conn.commit()
+        c.close()
 
-    def writeBoard(self):
-        with open(self.file, mode='w') as f:
-            f.write(simplejson.dumps(self.kb))
-
-    def newItem(self, title, notes, state=KB_TODO):
-        currentMax = max(self.kb[state])
-        itemDict = {'title': title, 'notes': notes}
-        self.kb[state][currentMax+1] = itemDict
-        self.writeBoard()
+    def newItem(self, title, state):
+        t = (title, state, str(date.today()))
+        conn = sqlite3.connect(self.db)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''insert into kb_board(title, state, created) values (?,?,?);''', t)
+        conn.commit()
+        c.close()
 
     def getState(self, state):
-        return self.kb[state]
+        listing = []
+        t = (state, )
+        conn = sqlite3.connect(self.db)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''select * from kb_board where state=?;''', t)
+        for item in c.fetchall():
+            listing.append({'id': item['id'], 'title': item['title'], 'created': item['created']})
+        c.close()
+        return listing
 
-    def moveItem(self, initState, newState, id):
-        tempDict = self.kb[initState].pop(id)
-        currentMax
+    def moveItem(self, newState, id):
+        t = (newState, id)
+        conn = sqlite3.connect(self.db)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute('''update kb_board set state=? where id=?;''', t)
+        conn.commit()
+        c.close()
