@@ -75,6 +75,17 @@ def main():
             id = int(sys.argv[2])
             kbBoard.delItem(id)
             print 'Deleting Item %s' % id
+        elif sys.argv[1] == 'undo':
+            id = int(sys.argv[2])
+            kbBoard.unDoItem(id)
+            print 'Returning item %s to ToDo' % id
+        elif sys.argv[1] == 'unpark':
+            id = int(sys.argv[2])
+            kbBoard.unParkItem(id)
+            print 'Returning item %s to ToDo' % id
+        else:
+            print 'Current Supported Commands:'
+            print 'list, new, do, done, park, del, undo, unpark'
     return
 
 if __name__ == '__main__':

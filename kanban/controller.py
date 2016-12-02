@@ -38,5 +38,8 @@ class KanBan:
     def getParked(self):
         return self.kbboard.getState(KB_PARKED)
 
-    def unPark(self, id):
+    def unParkItem(self, id):
         self.kbboard.moveItem(KB_DOING, id)
+
+    def unDoItem(self, id):
+        self.kbboard.moveItem(KB_TODO, id)
